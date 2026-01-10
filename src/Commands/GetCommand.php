@@ -39,10 +39,8 @@ class GetCommand extends Command
         try {
             $query = RepositoryFactory::query($entity);
 
-            // Apply select
-            $select = $this->option('select');
-            if (! empty($select)) {
-                $query->select($select);
+            if (filled($this->option('select'))) {
+                $query->select($this->option('select'));
             }
 
             $record = $query->find((int) $id);

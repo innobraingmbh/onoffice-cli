@@ -59,29 +59,15 @@ class WhereClauseParser
         return array_map(fn (string $clause) => self::parse($clause), $clauses);
     }
 
-    /**
-     * Cast value to appropriate type.
-     */
     protected static function castValue(string $value): mixed
     {
-        // Boolean
-        if (strtolower($value) === 'true') {
-            return true;
-        }
-        if (strtolower($value) === 'false') {
-            return false;
-        }
-
-        // Null
-        if (strtolower($value) === 'null') {
-            return null;
-        }
-
-        // Numeric
-        if (is_numeric($value)) {
-            return str_contains($value, '.') ? (float) $value : (int) $value;
-        }
-
-        return $value;
+        return match (strtolower($value)) {
+            'true' => true,
+            'false' => false,
+            'null' => null,
+            default => is_numeric($value)
+                ? (str_contains($value, '.') ? (float) $value : (int) $value)
+                : $value,
+        };
     }
 }

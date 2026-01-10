@@ -83,11 +83,18 @@ class FieldsCommand extends Command
         $rows = $data->map(fn ($field) => [
             $field['name'] ?? '-',
             $field['type'] ?? '-',
-            mb_strlen($field['label'] ?? '') > 40
-                ? mb_substr($field['label'], 0, 37).'...'
-                : ($field['label'] ?? '-'),
+            $this->truncate($field['label'] ?? '-', 40),
         ])->toArray();
 
         $this->table($headers, $rows);
+    }
+
+    private function truncate(string $value, int $length): string
+    {
+        if (mb_strlen($value) <= $length) {
+            return $value;
+        }
+
+        return mb_substr($value, 0, $length - 3).'...';
     }
 }

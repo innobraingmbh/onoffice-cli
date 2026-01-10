@@ -39,45 +39,34 @@ class SearchCommand extends Command
         try {
             $query = RepositoryFactory::query($entity);
 
-            // Apply select
-            $select = $this->option('select');
-            if (! empty($select)) {
-                $query->select($select);
+            if (filled($this->option('select'))) {
+                $query->select($this->option('select'));
             }
 
-            // Apply where clauses
-            $whereClauses = $this->option('where');
-            if (! empty($whereClauses)) {
-                $parsed = WhereClauseParser::parseMany($whereClauses);
-                foreach ($parsed as $clause) {
-                    $query->where($clause['field'], $clause['operator'], $clause['value']);
-                }
+            foreach (WhereClauseParser::parseMany($this->option('where') ?? []) as $clause) {
+                $query->where($clause['field'], $clause['operator'], $clause['value']);
             }
 
-            // Apply ordering
             if ($orderBy = $this->option('orderBy')) {
                 $query->orderBy($orderBy);
             }
+
             if ($orderByDesc = $this->option('orderByDesc')) {
                 $query->orderByDesc($orderByDesc);
             }
 
-            // Apply pagination
             if ($limit = $this->option('limit')) {
                 $query->limit((int) $limit);
             }
+
             if ($offset = $this->option('offset')) {
                 $query->offset((int) $offset);
             }
 
-            // Execute query
             $results = $query->get();
 
-            // Get result count (use collection count as fallback)
-            $total = $results->count();
-
             return $this->outputSuccess($results, [
-                'total' => $total,
+                'total' => $results->count(),
                 'limit' => $this->option('limit') ? (int) $this->option('limit') : null,
                 'offset' => $this->option('offset') ? (int) $this->option('offset') : 0,
                 'entity' => $entity,
