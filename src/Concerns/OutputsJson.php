@@ -90,7 +90,6 @@ trait OutputsJson
             $this->newLine();
         }
 
-        // Build table from first record's keys
         $firstRecord = $records[0];
         $elements = $firstRecord['elements'] ?? $firstRecord;
         $headers = array_merge(['ID'], array_keys($elements));
@@ -100,16 +99,26 @@ trait OutputsJson
             $elements = $record['elements'] ?? $record;
             $row = [$record['id'] ?? '-'];
             foreach ($elements as $value) {
-                if (is_array($value)) {
-                    $value = json_encode($value);
-                }
-                $row[] = mb_strlen((string) $value) > 50
-                    ? mb_substr((string) $value, 0, 47).'...'
-                    : $value;
+                $row[] = $this->formatCellValue($value);
             }
             $rows[] = $row;
         }
 
         $this->table($headers, $rows);
+    }
+
+    protected function formatCellValue(mixed $value, int $maxLength = 50): string
+    {
+        if (is_array($value)) {
+            $value = json_encode($value);
+        }
+
+        $value = (string) $value;
+
+        if (mb_strlen($value) <= $maxLength) {
+            return $value;
+        }
+
+        return mb_substr($value, 0, $maxLength - 3).'...';
     }
 }

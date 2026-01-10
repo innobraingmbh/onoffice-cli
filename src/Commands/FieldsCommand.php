@@ -19,14 +19,14 @@ class FieldsCommand extends Command
         'searchcriteria' => 'searchcriteria',
     ];
 
-    public $signature = 'onoffice:fields
+    protected $signature = 'onoffice:fields
         {entity : The entity to get fields for (estate, address, activity, searchcriteria)}
         {--filter= : Filter fields by name (case-insensitive, supports wildcards: *preis*)}
         {--field= : Get details for a specific field including permitted values}
         {--full : Show full field details including permitted values}
         {--json : Output results as JSON}';
 
-    public $description = 'List available fields for an onOffice entity';
+    protected $description = 'List available fields for an onOffice entity';
 
     public function handle(): int
     {
@@ -149,23 +149,22 @@ class FieldsCommand extends Command
         $this->info("Fields for {$meta['entity']} ({$meta['count']} total)");
         $this->newLine();
 
-        $headers = $this->option('full')
-            ? ['Name', 'Type', 'Length', 'Default', 'Permitted Values']
-            : ['Name', 'Type'];
-
-        $rows = $data->map(fn (array $field) => $this->option('full')
-            ? [
+        if ($this->option('full')) {
+            $headers = ['Name', 'Type', 'Length', 'Default', 'Permitted Values'];
+            $rows = $data->map(fn (array $field): array => [
                 $field['name'],
                 $field['type'] ?? '-',
                 $field['length'] ?? '-',
                 $field['default'] ?? '-',
                 $this->formatPermittedValues($field['permittedValues'] ?? null),
-            ]
-            : [
+            ])->toArray();
+        } else {
+            $headers = ['Name', 'Type'];
+            $rows = $data->map(fn (array $field): array => [
                 $field['name'],
                 $field['type'] ?? '-',
-            ]
-        )->toArray();
+            ])->toArray();
+        }
 
         $this->table($headers, $rows);
     }

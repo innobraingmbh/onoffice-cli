@@ -61,13 +61,24 @@ class WhereClauseParser
 
     protected static function castValue(string $value): mixed
     {
-        return match (strtolower($value)) {
-            'true' => true,
-            'false' => false,
-            'null' => null,
-            default => is_numeric($value)
-                ? (str_contains($value, '.') ? (float) $value : (int) $value)
-                : $value,
-        };
+        $lowered = strtolower($value);
+
+        if ($lowered === 'true') {
+            return true;
+        }
+
+        if ($lowered === 'false') {
+            return false;
+        }
+
+        if ($lowered === 'null') {
+            return null;
+        }
+
+        if (! is_numeric($value)) {
+            return $value;
+        }
+
+        return str_contains($value, '.') ? (float) $value : (int) $value;
     }
 }

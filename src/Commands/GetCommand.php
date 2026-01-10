@@ -12,13 +12,13 @@ class GetCommand extends Command
 {
     use OutputsJson;
 
-    public $signature = 'onoffice:get
+    protected $signature = 'onoffice:get
         {entity : The entity type (estate, address, activity, etc.)}
         {id : The record ID to fetch}
         {--select=* : Fields to select (e.g., --select=Id --select=Ort)}
         {--json : Output results as JSON}';
 
-    public $description = 'Get a single onOffice record by ID';
+    protected $description = 'Get a single onOffice record by ID';
 
     public function handle(): int
     {

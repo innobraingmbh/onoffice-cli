@@ -13,7 +13,7 @@ class SearchCommand extends Command
 {
     use OutputsJson;
 
-    public $signature = 'onoffice:search
+    protected $signature = 'onoffice:search
         {entity : The entity to search (estate, address, activity, etc.)}
         {--where=* : Filter conditions (e.g., --where="status=1" --where="price<500000")}
         {--select=* : Fields to select (e.g., --select=Id --select=Ort)}
@@ -23,7 +23,7 @@ class SearchCommand extends Command
         {--orderByDesc= : Field to order by (descending)}
         {--json : Output results as JSON}';
 
-    public $description = 'Search onOffice records with filters and pagination';
+    protected $description = 'Search onOffice records with filters and pagination';
 
     public function handle(): int
     {
