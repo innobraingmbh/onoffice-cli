@@ -48,12 +48,24 @@ php artisan onoffice:get address 6789 --select=Name --select=Email --json
 ### List Available Fields
 
 ```bash
-# Get fields for estates
+# Get all fields (compact: name and type only)
 php artisan onoffice:fields estate --json
 
-# Get fields for addresses
-php artisan onoffice:fields address --json
+# Search fields by name
+php artisan onoffice:fields estate --filter=preis --json
+php artisan onoffice:fields estate --filter="*flaeche" --json
+
+# Get single field with permitted values
+php artisan onoffice:fields estate --field=objekttyp --json
+
+# Get all fields with full details
+php artisan onoffice:fields estate --full --json
 ```
+
+**Fields command options:**
+- `--filter=pattern` - Search by name (substring or wildcard like `*preis*`)
+- `--field=name` - Get single field with full details including permitted values
+- `--full` - Show all field details (length, default, permittedValues)
 
 ### Supported Entities
 
@@ -87,6 +99,19 @@ With `--json` flag, output is structured for easy parsing:
 ```
 
 Without `--json`, output is displayed as a human-readable table.
+
+## Development
+
+This is a Laravel package. To run commands locally during development:
+
+```bash
+# Copy and configure credentials
+cp testbench.yaml.dist testbench.yaml
+# Edit testbench.yaml with your ON_OFFICE_TOKEN and ON_OFFICE_SECRET
+
+# Run commands via testbench
+./vendor/bin/testbench onoffice:search estate --limit=5 --json
+```
 
 ## Testing
 
