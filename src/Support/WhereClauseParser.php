@@ -80,20 +80,19 @@ class WhereClauseParser
      */
     protected static function castValue(string $value): mixed
     {
-        $lowered = strtolower($value);
+        return match (strtolower($value)) {
+            'true' => true,
+            'false' => false,
+            'null' => null,
+            default => self::castNumericValue($value),
+        };
+    }
 
-        if ($lowered === 'true') {
-            return true;
-        }
-
-        if ($lowered === 'false') {
-            return false;
-        }
-
-        if ($lowered === 'null') {
-            return null;
-        }
-
+    /**
+     * Cast a numeric string to int or float, or return as-is if not numeric.
+     */
+    private static function castNumericValue(string $value): int|float|string
+    {
         if (! is_numeric($value)) {
             return $value;
         }

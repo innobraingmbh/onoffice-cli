@@ -130,13 +130,9 @@ class FieldsCommand extends OnOfficeCommand
 
     protected function renderHumanOutput(mixed $data, array $meta = []): void
     {
-        if ($data instanceof Collection && $data->isEmpty()) {
-            $this->info('No fields found.');
+        $isEmpty = $data instanceof Collection ? $data->isEmpty() : empty($data);
 
-            return;
-        }
-
-        if (is_array($data) && empty($data)) {
+        if ($isEmpty) {
             $this->info('No fields found.');
 
             return;

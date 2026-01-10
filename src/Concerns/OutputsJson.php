@@ -6,13 +6,18 @@ use Illuminate\Support\Collection;
 
 trait OutputsJson
 {
+    private const JSON_FLAGS = JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE;
+
+    /**
+     * @param  array<string, mixed>  $meta
+     */
     protected function outputSuccess(mixed $data, array $meta = []): int
     {
         if ($this->option('json')) {
             $this->line(json_encode([
                 'data' => $data instanceof Collection ? $data->toArray() : $data,
                 'meta' => $meta,
-            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            ], self::JSON_FLAGS));
 
             return self::SUCCESS;
         }
@@ -29,7 +34,7 @@ trait OutputsJson
                 'error' => true,
                 'message' => $message,
                 'code' => $code,
-            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            ], self::JSON_FLAGS));
 
             return self::FAILURE;
         }
@@ -39,6 +44,9 @@ trait OutputsJson
         return self::FAILURE;
     }
 
+    /**
+     * @param  array<string, mixed>  $meta
+     */
     protected function renderHumanOutput(mixed $data, array $meta = []): void
     {
         if ($data instanceof Collection) {
@@ -66,9 +74,12 @@ trait OutputsJson
         }
 
         // Fallback: dump as JSON
-        $this->line(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $this->line(json_encode($data, self::JSON_FLAGS));
     }
 
+    /**
+     * @param  array<string, mixed>  $record
+     */
     protected function renderSingleRecord(array $record): void
     {
         $this->info("Record ID: {$record['id']}");
@@ -76,10 +87,8 @@ trait OutputsJson
 
         $elements = $record['elements'] ?? $record;
         foreach ($elements as $key => $value) {
-            if (is_array($value)) {
-                $value = json_encode($value);
-            }
-            $this->line("  <comment>{$key}:</comment> {$value}");
+            $formatted = is_array($value) ? json_encode($value) : $value;
+            $this->line("  <comment>{$key}:</comment> {$formatted}");
         }
     }
 

@@ -4,9 +4,14 @@ namespace InnoBrain\OnofficeCli\Exceptions;
 
 class InvalidEntityException extends OnOfficeCliException
 {
+    /**
+     * @param  array<string>  $availableEntities
+     */
     public function __construct(string $entity, array $availableEntities)
     {
-        $message = "Unknown entity '{$entity}'. Available: ".implode(', ', $availableEntities);
-        parent::__construct($message, 400);
+        parent::__construct(
+            "Unknown entity '{$entity}'. Available: ".implode(', ', $availableEntities),
+            400
+        );
     }
 }

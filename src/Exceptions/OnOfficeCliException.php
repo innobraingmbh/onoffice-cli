@@ -3,14 +3,15 @@
 namespace InnoBrain\OnofficeCli\Exceptions;
 
 use Exception;
+use Throwable;
 
 class OnOfficeCliException extends Exception
 {
-    protected int $httpCode;
-
-    public function __construct(string $message, int $httpCode = 500, ?Exception $previous = null)
-    {
-        $this->httpCode = $httpCode;
+    public function __construct(
+        string $message,
+        protected int $httpCode = 500,
+        ?Throwable $previous = null
+    ) {
         parent::__construct($message, $httpCode, $previous);
     }
 
