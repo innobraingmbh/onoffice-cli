@@ -29,6 +29,23 @@ php artisan onoffice:fields <entity> [--json]
 
 **Where clause operators:** `=`, `!=`, `<`, `>`, `<=`, `>=`, `like`, `not like`
 
+## Running Commands (Development)
+
+This is a Laravel package, not an application. Use Orchestra Testbench to run commands:
+
+```bash
+# Copy and configure testbench.yaml with your API credentials
+cp testbench.yaml.dist testbench.yaml
+# Edit testbench.yaml and add your ON_OFFICE_TOKEN and ON_OFFICE_SECRET
+
+# Run commands via testbench
+./vendor/bin/testbench onoffice:search estate --limit=5 --json
+./vendor/bin/testbench onoffice:get estate 123 --json
+./vendor/bin/testbench onoffice:fields estate --json
+```
+
+The `testbench.yaml` file is gitignored. Get API credentials from your onOffice admin panel (token: 32 chars, secret: 64 chars).
+
 ## Development Commands
 
 ```bash

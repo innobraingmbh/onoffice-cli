@@ -1,0 +1,7 @@
+providers:
+  - Innobrain\OnOfficeAdapter\OnOfficeAdapterServiceProvider
+  - InnoBrain\OnofficeCli\OnofficeCliServiceProvider
+
+env:
+  - ON_OFFICE_TOKEN=your_32_character_token_here
+  - ON_OFFICE_SECRET=your_64_character_secret_here
