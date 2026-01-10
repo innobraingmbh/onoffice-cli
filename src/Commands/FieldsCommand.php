@@ -2,16 +2,13 @@
 
 namespace InnoBrain\OnofficeCli\Commands;
 
-use Exception;
-use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Innobrain\OnOfficeAdapter\Facades\FieldRepository;
-use InnoBrain\OnofficeCli\Concerns\OutputsJson;
+use InnoBrain\OnofficeCli\Exceptions\OnOfficeCliException;
+use InnoBrain\OnofficeCli\Exceptions\RecordNotFoundException;
 
-class FieldsCommand extends Command
+class FieldsCommand extends OnOfficeCommand
 {
-    use OutputsJson;
-
     protected const MODULE_MAP = [
         'estate' => 'estate',
         'address' => 'address',
@@ -28,58 +25,53 @@ class FieldsCommand extends Command
 
     protected $description = 'List available fields for an onOffice entity';
 
-    public function handle(): int
+    protected function executeCommand(): int
     {
         $entity = strtolower($this->argument('entity'));
 
         if (! isset(self::MODULE_MAP[$entity])) {
-            return $this->outputError(
+            throw new OnOfficeCliException(
                 "Fields are not available for '{$entity}'. Supported: ".implode(', ', array_keys(self::MODULE_MAP)),
                 400
             );
         }
 
-        try {
-            $module = self::MODULE_MAP[$entity];
+        $module = self::MODULE_MAP[$entity];
 
-            $response = FieldRepository::query()
-                ->withModules($module)
-                ->get();
+        $response = FieldRepository::query()
+            ->withModules($module)
+            ->get();
 
-            $fields = $this->parseFields($response);
+        $fields = $this->parseFields($response);
 
-            // Single field lookup
-            if ($fieldName = $this->option('field')) {
-                return $this->handleSingleField($fields, $fieldName, $entity, $module);
-            }
+        // Single field lookup
+        if ($fieldName = $this->option('field')) {
+            return $this->handleSingleField($fields, $fieldName, $entity, $module);
+        }
 
-            // Filter fields by pattern
-            if ($filter = $this->option('filter')) {
-                $fields = $this->filterFields($fields, $filter);
-            }
+        // Filter fields by pattern
+        if ($filter = $this->option('filter')) {
+            $fields = $this->filterFields($fields, $filter);
+        }
 
-            if ($this->option('full')) {
-                return $this->outputSuccess($fields, [
-                    'entity' => $entity,
-                    'module' => $module,
-                    'count' => $fields->count(),
-                ]);
-            }
-
-            $compact = $fields->map(fn (array $field) => [
-                'name' => $field['name'],
-                'type' => $field['type'],
-            ]);
-
-            return $this->outputSuccess($compact, [
+        if ($this->option('full')) {
+            return $this->outputSuccess($fields, [
                 'entity' => $entity,
                 'module' => $module,
-                'count' => $compact->count(),
+                'count' => $fields->count(),
             ]);
-
-        } catch (Exception $e) {
-            return $this->outputError($e->getMessage(), 500);
         }
+
+        $compact = $fields->map(fn (array $field): array => [
+            'name' => $field['name'],
+            'type' => $field['type'],
+        ]);
+
+        return $this->outputSuccess($compact, [
+            'entity' => $entity,
+            'module' => $module,
+            'count' => $compact->count(),
+        ]);
     }
 
     private function handleSingleField(Collection $fields, string $fieldName, string $entity, string $module): int
@@ -88,11 +80,11 @@ class FieldsCommand extends Command
 
         if ($field === null) {
             // Try case-insensitive match
-            $field = $fields->first(fn (array $f) => strcasecmp($f['name'], $fieldName) === 0);
+            $field = $fields->first(fn (array $f): bool => strcasecmp($f['name'], $fieldName) === 0);
         }
 
         if ($field === null) {
-            return $this->outputError("Field '{$fieldName}' not found for {$entity}", 404);
+            throw new RecordNotFoundException($entity, $fieldName);
         }
 
         return $this->outputSuccess($field, [
@@ -106,7 +98,7 @@ class FieldsCommand extends Command
         // If no wildcards, treat as substring search
         if (! str_contains($filter, '*')) {
             return $fields
-                ->filter(fn (array $field) => stripos($field['name'], $filter) !== false)
+                ->filter(fn (array $field): bool => stripos($field['name'], $filter) !== false)
                 ->values();
         }
 
@@ -114,25 +106,23 @@ class FieldsCommand extends Command
         $pattern = str_replace('\*', '.*', preg_quote($filter, '/'));
 
         return $fields
-            ->filter(fn (array $field) => preg_match("/^{$pattern}$/i", $field['name']))
+            ->filter(fn (array $field): bool => preg_match("/^{$pattern}$/i", $field['name']) === 1)
             ->values();
     }
 
     private function parseFields(Collection $response): Collection
     {
         return $response
-            ->flatMap(function (array $item) {
+            ->flatMap(function (array $item): Collection {
                 $elements = $item['elements'] ?? [];
 
-                return collect($elements)->map(function (array $fieldData, string $fieldName) {
-                    return [
-                        'name' => $fieldName,
-                        'type' => $fieldData['type'] ?? null,
-                        'length' => $fieldData['length'] ?? null,
-                        'permittedValues' => $fieldData['permittedvalues'] ?? null,
-                        'default' => $fieldData['default'] ?? null,
-                    ];
-                });
+                return collect($elements)->map(fn (array $fieldData, string $fieldName): array => [
+                    'name' => $fieldName,
+                    'type' => $fieldData['type'] ?? null,
+                    'length' => $fieldData['length'] ?? null,
+                    'permittedValues' => $fieldData['permittedvalues'] ?? null,
+                    'default' => $fieldData['default'] ?? null,
+                ]);
             })
             ->sortBy('name')
             ->values();
@@ -140,8 +130,26 @@ class FieldsCommand extends Command
 
     protected function renderHumanOutput(mixed $data, array $meta = []): void
     {
-        if ($data->isEmpty()) {
+        if ($data instanceof Collection && $data->isEmpty()) {
             $this->info('No fields found.');
+
+            return;
+        }
+
+        if (is_array($data) && empty($data)) {
+            $this->info('No fields found.');
+
+            return;
+        }
+
+        // Single field output
+        if (is_array($data) && isset($data['name']) && ! isset($data[0])) {
+            $this->info("Field: {$data['name']}");
+            $this->newLine();
+            $this->line('  <comment>Type:</comment> '.($data['type'] ?? '-'));
+            $this->line('  <comment>Length:</comment> '.($data['length'] ?? '-'));
+            $this->line('  <comment>Default:</comment> '.($data['default'] ?? '-'));
+            $this->line('  <comment>Permitted Values:</comment> '.$this->formatPermittedValues($data['permittedValues'] ?? null));
 
             return;
         }

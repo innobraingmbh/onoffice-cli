@@ -83,6 +83,10 @@ trait OutputsJson
         }
     }
 
+    /**
+     * @param  array<array<string, mixed>>  $records
+     * @param  array<string, mixed>  $meta
+     */
     protected function renderMultipleRecords(array $records, array $meta = []): void
     {
         if (isset($meta['total'])) {

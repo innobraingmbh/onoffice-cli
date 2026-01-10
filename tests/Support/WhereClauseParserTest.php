@@ -1,5 +1,6 @@
 <?php
 
+use InnoBrain\OnofficeCli\Exceptions\ValidationException;
 use InnoBrain\OnofficeCli\Support\WhereClauseParser;
 
 describe('WhereClauseParser', function () {
@@ -130,20 +131,29 @@ describe('WhereClauseParser', function () {
 
     it('throws exception for missing operator', function () {
         WhereClauseParser::parse('statusactive');
-    })->throws(InvalidArgumentException::class, 'no valid operator found');
+    })->throws(ValidationException::class, 'no valid operator found');
 
     it('throws exception for missing field', function () {
         WhereClauseParser::parse('=active');
-    })->throws(InvalidArgumentException::class, 'field and value are required');
+    })->throws(ValidationException::class, 'field name is required');
 
     it('throws exception for missing value', function () {
         WhereClauseParser::parse('status=');
-    })->throws(InvalidArgumentException::class, 'field and value are required');
+    })->throws(ValidationException::class, 'value is required');
 
     it('trims whitespace from clause', function () {
         $result = WhereClauseParser::parse('  status = active  ');
 
         expect($result['field'])->toBe('status');
         expect($result['value'])->toBe('active');
+    });
+
+    it('correctly matches not like before like', function () {
+        // This test ensures "not like" is matched before "like"
+        $result = WhereClauseParser::parse('field not like value');
+
+        expect($result['operator'])->toBe('not like');
+        expect($result['field'])->toBe('field');
+        expect($result['value'])->toBe('value');
     });
 });

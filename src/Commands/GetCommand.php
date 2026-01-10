@@ -2,16 +2,13 @@
 
 namespace InnoBrain\OnofficeCli\Commands;
 
-use Exception;
-use Illuminate\Console\Command;
-use InnoBrain\OnofficeCli\Concerns\OutputsJson;
+use InnoBrain\OnofficeCli\Exceptions\InvalidEntityException;
+use InnoBrain\OnofficeCli\Exceptions\RecordNotFoundException;
+use InnoBrain\OnofficeCli\Exceptions\ValidationException;
 use InnoBrain\OnofficeCli\Support\RepositoryFactory;
-use InvalidArgumentException;
 
-class GetCommand extends Command
+class GetCommand extends OnOfficeCommand
 {
-    use OutputsJson;
-
     protected $signature = 'onoffice:get
         {entity : The entity type (estate, address, activity, etc.)}
         {id : The record ID to fetch}
@@ -20,46 +17,34 @@ class GetCommand extends Command
 
     protected $description = 'Get a single onOffice record by ID';
 
-    public function handle(): int
+    protected function executeCommand(): int
     {
         $entity = $this->argument('entity');
         $id = $this->argument('id');
 
         if (! RepositoryFactory::isValidEntity($entity)) {
-            return $this->outputError(
-                "Unknown entity '{$entity}'. Available: ".implode(', ', RepositoryFactory::getAvailableEntities()),
-                400
-            );
+            throw new InvalidEntityException($entity, RepositoryFactory::getAvailableEntities());
         }
 
         if (! is_numeric($id)) {
-            return $this->outputError("ID must be numeric, got '{$id}'", 400);
+            throw new ValidationException("ID must be numeric, got '{$id}'");
         }
 
-        try {
-            $query = RepositoryFactory::query($entity);
+        $query = RepositoryFactory::query($entity);
 
-            if (filled($this->option('select'))) {
-                $query->select($this->option('select'));
-            }
-
-            $record = $query->find((int) $id);
-
-            if ($record === null) {
-                return $this->outputError(
-                    "Record not found: {$entity} #{$id}",
-                    404
-                );
-            }
-
-            return $this->outputSuccess($record, [
-                'entity' => $entity,
-            ]);
-
-        } catch (InvalidArgumentException $e) {
-            return $this->outputError($e->getMessage(), 400);
-        } catch (Exception $e) {
-            return $this->outputError($e->getMessage(), 500);
+        $select = $this->option('select');
+        if (filled($select)) {
+            $query->select($select);
         }
+
+        $record = $query->find((int) $id);
+
+        if ($record === null) {
+            throw new RecordNotFoundException($entity, $id);
+        }
+
+        return $this->outputSuccess($record, [
+            'entity' => $entity,
+        ]);
     }
 }

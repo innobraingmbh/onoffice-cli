@@ -2,47 +2,63 @@
 
 namespace InnoBrain\OnofficeCli\Support;
 
-use InvalidArgumentException;
+use InnoBrain\OnofficeCli\Exceptions\ValidationException;
 
 class WhereClauseParser
 {
     /**
-     * Supported operators in order of precedence (longer operators first).
+     * Regex patterns for operators, ordered by specificity (longer/more specific first).
+     * Word boundary patterns ensure "not like" matches before "like".
      */
-    protected const OPERATORS = ['!=', '>=', '<=', '>', '<', '=', ' not like ', ' like '];
+    protected const OPERATOR_PATTERNS = [
+        '/\s+not\s+like\s+/i' => 'not like',
+        '/\s+like\s+/i' => 'like',
+        '/!=/' => '!=',
+        '/>=/' => '>=',
+        '/<=/' => '<=',
+        '/>/' => '>',
+        '/</' => '<',
+        '/=/' => '=',
+    ];
 
     /**
      * Parse a where clause string into field, operator, and value.
      *
-     * @return array{field: string, operator: string, value: string}
+     * @return array{field: string, operator: string, value: mixed}
      */
     public static function parse(string $clause): array
     {
         $clause = trim($clause);
 
-        foreach (self::OPERATORS as $operator) {
-            $normalizedOperator = trim($operator);
-            $pos = stripos($clause, $operator);
+        foreach (self::OPERATOR_PATTERNS as $pattern => $operator) {
+            if (preg_match($pattern, $clause, $matches, PREG_OFFSET_CAPTURE)) {
+                $matchedString = $matches[0][0];
+                $pos = $matches[0][1];
 
-            if ($pos !== false) {
                 $field = trim(substr($clause, 0, $pos));
-                $value = trim(substr($clause, $pos + strlen($operator)));
+                $value = trim(substr($clause, $pos + strlen($matchedString)));
 
-                if ($field === '' || $value === '') {
-                    throw new InvalidArgumentException(
-                        "Invalid where clause '{$clause}': field and value are required"
+                if ($field === '') {
+                    throw new ValidationException(
+                        "Invalid where clause '{$clause}': field name is required"
+                    );
+                }
+
+                if ($value === '') {
+                    throw new ValidationException(
+                        "Invalid where clause '{$clause}': value is required"
                     );
                 }
 
                 return [
                     'field' => $field,
-                    'operator' => $normalizedOperator,
+                    'operator' => $operator,
                     'value' => self::castValue($value),
                 ];
             }
         }
 
-        throw new InvalidArgumentException(
+        throw new ValidationException(
             "Invalid where clause '{$clause}': no valid operator found. ".
             'Supported operators: =, !=, <, >, <=, >=, like, not like'
         );
@@ -52,13 +68,16 @@ class WhereClauseParser
      * Parse multiple where clauses.
      *
      * @param  array<string>  $clauses
-     * @return array<array{field: string, operator: string, value: string}>
+     * @return array<array{field: string, operator: string, value: mixed}>
      */
     public static function parseMany(array $clauses): array
     {
-        return array_map(fn (string $clause) => self::parse($clause), $clauses);
+        return array_map(fn (string $clause): array => self::parse($clause), $clauses);
     }
 
+    /**
+     * Cast string value to appropriate PHP type.
+     */
     protected static function castValue(string $value): mixed
     {
         $lowered = strtolower($value);
