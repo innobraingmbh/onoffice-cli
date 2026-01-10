@@ -185,6 +185,8 @@ class FieldsCommand extends Command
             return implode(', ', $values);
         }
 
-        return implode(', ', array_slice($values, 0, 3))." (+{$count} more)";
+        $remaining = $count - 3;
+
+        return implode(', ', array_slice($values, 0, 3))." (+{$remaining} more)";
     }
 }

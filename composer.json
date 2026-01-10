@@ -64,10 +64,7 @@
         "laravel": {
             "providers": [
                 "InnoBrain\\OnofficeCli\\OnofficeCliServiceProvider"
-            ],
-            "aliases": {
-                "OnofficeCli": "InnoBrain\\OnofficeCli\\Facades\\OnofficeCli"
-            }
+            ]
         }
     },
     "minimum-stability": "dev",

@@ -43,7 +43,7 @@ class SearchCommand extends Command
                 $query->select($this->option('select'));
             }
 
-            foreach (WhereClauseParser::parseMany($this->option('where') ?? []) as $clause) {
+            foreach (WhereClauseParser::parseMany($this->option('where')) as $clause) {
                 $query->where($clause['field'], $clause['operator'], $clause['value']);
             }
 

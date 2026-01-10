@@ -19,9 +19,6 @@ class OnofficeCliServiceProvider extends PackageServiceProvider
          */
         $package
             ->name('onoffice-cli')
-            ->hasConfigFile()
-            ->hasViews()
-            ->hasMigration('create_onoffice_cli_table')
             ->hasCommand(SearchCommand::class)
             ->hasCommand(GetCommand::class)
             ->hasCommand(FieldsCommand::class);
