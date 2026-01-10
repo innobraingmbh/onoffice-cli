@@ -2,9 +2,9 @@
 
 namespace InnoBrain\OnofficeCli;
 
+use InnoBrain\OnofficeCli\Commands\OnofficeCliCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use InnoBrain\OnofficeCli\Commands\OnofficeCliCommand;
 
 class OnofficeCliServiceProvider extends PackageServiceProvider
 {

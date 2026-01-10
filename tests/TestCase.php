@@ -3,8 +3,8 @@
 namespace InnoBrain\OnofficeCli\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Orchestra\Testbench\TestCase as Orchestra;
 use InnoBrain\OnofficeCli\OnofficeCliServiceProvider;
+use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {
