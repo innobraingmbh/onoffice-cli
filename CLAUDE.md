@@ -19,8 +19,8 @@ php artisan onoffice:search <entity> [--where="field=value"] [--where="field<val
 # Get single record by ID
 php artisan onoffice:get <entity> <id> [--select=field] [--json]
 
-# List available fields for an entity
-php artisan onoffice:fields <entity> [--json]
+# List available fields for an entity (compact by default)
+php artisan onoffice:fields <entity> [--filter=pattern] [--field=name] [--full] [--json]
 ```
 
 **Supported entities for search/get:** `estate`, `address`, `activity`, `file`, `field`, `filter`, `relation`, `searchcriteria`, `setting`, `log`, `macro`, `marketplace`
@@ -28,6 +28,11 @@ php artisan onoffice:fields <entity> [--json]
 **Supported entities for fields:** `estate`, `address`, `activity`, `searchcriteria`
 
 **Where clause operators:** `=`, `!=`, `<`, `>`, `<=`, `>=`, `like`, `not like`
+
+**Fields command options:**
+- `--filter=pattern` - Search fields by name (substring or wildcard like `*preis*`)
+- `--field=name` - Get single field with full details including permitted values
+- `--full` - Show all field details (length, default, permittedValues)
 
 ## Running Commands (Development)
 

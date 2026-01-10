@@ -4,6 +4,7 @@ namespace InnoBrain\OnofficeCli\Commands;
 
 use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Innobrain\OnOfficeAdapter\Facades\FieldRepository;
 use InnoBrain\OnofficeCli\Concerns\OutputsJson;
 
@@ -11,9 +12,6 @@ class FieldsCommand extends Command
 {
     use OutputsJson;
 
-    /**
-     * Mapping from entity names to onOffice module names.
-     */
     protected const MODULE_MAP = [
         'estate' => 'estate',
         'address' => 'address',
@@ -23,6 +21,9 @@ class FieldsCommand extends Command
 
     public $signature = 'onoffice:fields
         {entity : The entity to get fields for (estate, address, activity, searchcriteria)}
+        {--filter= : Filter fields by name (case-insensitive, supports wildcards: *preis*)}
+        {--field= : Get details for a specific field including permitted values}
+        {--full : Show full field details including permitted values}
         {--json : Output results as JSON}';
 
     public $description = 'List available fields for an onOffice entity';
@@ -41,31 +42,100 @@ class FieldsCommand extends Command
         try {
             $module = self::MODULE_MAP[$entity];
 
-            $fields = FieldRepository::query()
+            $response = FieldRepository::query()
                 ->withModules($module)
                 ->get();
 
-            // Transform fields into a more useful format
-            $formatted = $fields->map(function ($field) {
-                return [
-                    'id' => $field['id'] ?? null,
-                    'name' => $field['elements']['fieldname'] ?? $field['id'] ?? null,
-                    'type' => $field['elements']['type'] ?? null,
-                    'label' => $field['elements']['label'] ?? null,
-                    'permittedValues' => $field['elements']['permittedvalues'] ?? null,
-                    'default' => $field['elements']['default'] ?? null,
-                ];
-            });
+            $fields = $this->parseFields($response);
 
-            return $this->outputSuccess($formatted, [
+            // Single field lookup
+            if ($fieldName = $this->option('field')) {
+                return $this->handleSingleField($fields, $fieldName, $entity, $module);
+            }
+
+            // Filter fields by pattern
+            if ($filter = $this->option('filter')) {
+                $fields = $this->filterFields($fields, $filter);
+            }
+
+            if ($this->option('full')) {
+                return $this->outputSuccess($fields, [
+                    'entity' => $entity,
+                    'module' => $module,
+                    'count' => $fields->count(),
+                ]);
+            }
+
+            $compact = $fields->map(fn (array $field) => [
+                'name' => $field['name'],
+                'type' => $field['type'],
+            ]);
+
+            return $this->outputSuccess($compact, [
                 'entity' => $entity,
                 'module' => $module,
-                'count' => $formatted->count(),
+                'count' => $compact->count(),
             ]);
 
         } catch (Exception $e) {
             return $this->outputError($e->getMessage(), 500);
         }
+    }
+
+    private function handleSingleField(Collection $fields, string $fieldName, string $entity, string $module): int
+    {
+        $field = $fields->firstWhere('name', $fieldName);
+
+        if ($field === null) {
+            // Try case-insensitive match
+            $field = $fields->first(fn (array $f) => strcasecmp($f['name'], $fieldName) === 0);
+        }
+
+        if ($field === null) {
+            return $this->outputError("Field '{$fieldName}' not found for {$entity}", 404);
+        }
+
+        return $this->outputSuccess($field, [
+            'entity' => $entity,
+            'module' => $module,
+        ]);
+    }
+
+    private function filterFields(Collection $fields, string $filter): Collection
+    {
+        // If no wildcards, treat as substring search
+        if (! str_contains($filter, '*')) {
+            return $fields
+                ->filter(fn (array $field) => stripos($field['name'], $filter) !== false)
+                ->values();
+        }
+
+        // Convert wildcards to regex
+        $pattern = str_replace('\*', '.*', preg_quote($filter, '/'));
+
+        return $fields
+            ->filter(fn (array $field) => preg_match("/^{$pattern}$/i", $field['name']))
+            ->values();
+    }
+
+    private function parseFields(Collection $response): Collection
+    {
+        return $response
+            ->flatMap(function (array $item) {
+                $elements = $item['elements'] ?? [];
+
+                return collect($elements)->map(function (array $fieldData, string $fieldName) {
+                    return [
+                        'name' => $fieldName,
+                        'type' => $fieldData['type'] ?? null,
+                        'length' => $fieldData['length'] ?? null,
+                        'permittedValues' => $fieldData['permittedvalues'] ?? null,
+                        'default' => $fieldData['default'] ?? null,
+                    ];
+                });
+            })
+            ->sortBy('name')
+            ->values();
     }
 
     protected function renderHumanOutput(mixed $data, array $meta = []): void
@@ -79,22 +149,42 @@ class FieldsCommand extends Command
         $this->info("Fields for {$meta['entity']} ({$meta['count']} total)");
         $this->newLine();
 
-        $headers = ['Name', 'Type', 'Label'];
-        $rows = $data->map(fn ($field) => [
-            $field['name'] ?? '-',
-            $field['type'] ?? '-',
-            $this->truncate($field['label'] ?? '-', 40),
-        ])->toArray();
+        $headers = $this->option('full')
+            ? ['Name', 'Type', 'Length', 'Default', 'Permitted Values']
+            : ['Name', 'Type'];
+
+        $rows = $data->map(fn (array $field) => $this->option('full')
+            ? [
+                $field['name'],
+                $field['type'] ?? '-',
+                $field['length'] ?? '-',
+                $field['default'] ?? '-',
+                $this->formatPermittedValues($field['permittedValues'] ?? null),
+            ]
+            : [
+                $field['name'],
+                $field['type'] ?? '-',
+            ]
+        )->toArray();
 
         $this->table($headers, $rows);
     }
 
-    private function truncate(string $value, int $length): string
+    private function formatPermittedValues(mixed $values): string
     {
-        if (mb_strlen($value) <= $length) {
-            return $value;
+        if (empty($values)) {
+            return '-';
         }
 
-        return mb_substr($value, 0, $length - 3).'...';
+        if (! is_array($values)) {
+            return (string) $values;
+        }
+
+        $count = count($values);
+        if ($count <= 3) {
+            return implode(', ', $values);
+        }
+
+        return implode(', ', array_slice($values, 0, 3))." (+{$count} more)";
     }
 }
