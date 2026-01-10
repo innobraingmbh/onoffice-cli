@@ -2,7 +2,9 @@
 
 namespace InnoBrain\OnofficeCli;
 
-use InnoBrain\OnofficeCli\Commands\OnofficeCliCommand;
+use InnoBrain\OnofficeCli\Commands\FieldsCommand;
+use InnoBrain\OnofficeCli\Commands\GetCommand;
+use InnoBrain\OnofficeCli\Commands\SearchCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -20,6 +22,8 @@ class OnofficeCliServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasViews()
             ->hasMigration('create_onoffice_cli_table')
-            ->hasCommand(OnofficeCliCommand::class);
+            ->hasCommand(SearchCommand::class)
+            ->hasCommand(GetCommand::class)
+            ->hasCommand(FieldsCommand::class);
     }
 }
