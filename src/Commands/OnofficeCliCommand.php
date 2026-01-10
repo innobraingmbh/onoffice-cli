@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace InnoBrain\OnofficeCli\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class OnofficeCliCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'onoffice-cli';
 
     public $description = 'My command';
 
