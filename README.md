@@ -1,9 +1,9 @@
 # onOffice CLI
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/innobraingmbh/onoffice-cli.svg?style=flat-square)](https://packagist.org/packages/innobraingmbh/onoffice-cli)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/innobrain/onoffice-cli.svg?style=flat-square)](https://packagist.org/packages/innobrain/onoffice-cli)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/innobraingmbh/onoffice-cli/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/innobraingmbh/onoffice-cli/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/innobraingmbh/onoffice-cli/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/innobraingmbh/onoffice-cli/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/innobraingmbh/onoffice-cli.svg?style=flat-square)](https://packagist.org/packages/innobraingmbh/onoffice-cli)
+[![Total Downloads](https://img.shields.io/packagist/dt/innobrain/onoffice-cli.svg?style=flat-square)](https://packagist.org/packages/innobrain/onoffice-cli)
 
 CLI commands for interacting with [onOffice](https://www.onoffice.com/) (real estate CRM) from the command line. Designed for AI agent integration with structured JSON output.
 
@@ -14,7 +14,7 @@ Built on top of [laravel-onoffice-adapter](https://github.com/innobraingmbh/lara
 You can install the package via composer:
 
 ```bash
-composer require innobraingmbh/onoffice-cli
+composer require innobrain/onoffice-cli
 ```
 
 This package requires [laravel-onoffice-adapter](https://github.com/innobraingmbh/laravel-onoffice-adapter) to be configured with your onOffice API credentials.
