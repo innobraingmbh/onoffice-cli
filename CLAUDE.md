@@ -169,6 +169,60 @@ FieldRepository::query()
     ->get();
 ```
 
+## API Gotchas
+
+**Field naming:**
+- Field names are mostly German and case-sensitive (`kaufpreis`, `Vorname`, `Ort`)
+- Some fields use mixed case inconsistently - check docs when unsure
+
+**Module name mappings:**
+- CLI uses friendly names, API uses internal names
+- `activity` → `agentslog` (API resourcetype)
+- `searchcriteria` → `searchcriterias` (API resourcetype)
+
+**ID fields:**
+- Addresses: `Id` (Datensatznummer) vs `KdNr` (customer number) - use `Id` for API
+- Activities: `Nr` is the activity ID
+
+**API limits:**
+- Default: 20 records, Maximum: 500 records per request
+- Use `--limit` and `--offset` for pagination
+
+**Marketing status (estates):**
+- Not a single field - combine `verkauft` and `reserviert`:
+  - Open: `verkauft=0, reserviert=0`
+  - Reserved: `verkauft=0, reserviert=1`
+  - Sold/Rented: `verkauft=1`
+
+**Filter operators:**
+- API supports: `=`, `>`, `<`, `>=`, `<=`, `!=`, `<>`, `between`, `like`, `not like`, `in`, `not in`
+- CLI currently exposes: `=`, `!=`, `<`, `>`, `<=`, `>=`, `like`, `not like`
+
+## Common Fields Quick Reference
+
+**estate:** `Id`, `status`, `objekttitel`, `objekttyp`, `kaufpreis`, `warmmiete`, `wohnflaeche`, `anzahl_zimmer`, `Ort`, `Plz`, `Strasse`, `verkauft`, `reserviert`, `geaendert_am`
+
+**address:** `Id`, `KdNr`, `Anrede`, `Vorname`, `Name`, `Firma`, `Email`, `Telefon1`, `Strasse`, `Plz`, `Ort`, `Land`, `Aenderung`
+
+**activity:** `Nr`, `Objekt_nr`, `Adress_nr`, `Aktionsart`, `Aktionstyp`, `Datum`, `Benutzer`, `Bemerkung`, `Beratungsebene`
+
+## Common Relation Types
+
+Relations link records between modules (see `docs/apidoc-text/actions/informationen-abfragen/relationen/`):
+
+```
+estate:address:buyer      - Buyers of estate
+estate:address:renter     - Tenants of estate
+estate:address:owner      - Owners of estate
+estate:address:interested - Prospective buyers
+estate:address:contactPerson - Contact person (broker)
+address:searchcriteria    - Search criteria for address
+agentsLog:address         - Activity linked to address
+agentsLog:estate          - Activity linked to estate
+```
+
+Full URN format: `urn:onoffice-de-ns:smart:2.5:relationTypes:<relation>`
+
 ## Dependencies
 
 - PHP 8.4+
