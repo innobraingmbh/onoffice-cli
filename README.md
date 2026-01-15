@@ -56,10 +56,13 @@ php artisan onoffice:search estate --json
 php artisan onoffice:search estate --where="status=1" --where="kaufpreis<500000" --json
 
 # Search with field selection and ordering
-php artisan onoffice:search estate --select=Id --select=Ort --select=Kaufpreis --orderBy=Kaufpreis --limit=10 --json
+php artisan onoffice:search estate --select=Id --select=Ort --select=kaufpreis --orderBy=kaufpreis --limit=10 --json
 
 # Search addresses
 php artisan onoffice:search address --where="Ort=Berlin" --json
+
+# Search activities for a specific estate
+php artisan onoffice:search activity --where="Objekt_nr=12345" --json
 ```
 
 ### Get Single Record
@@ -69,7 +72,7 @@ php artisan onoffice:search address --where="Ort=Berlin" --json
 php artisan onoffice:get estate 12345 --json
 
 # Get address with specific fields
-php artisan onoffice:get address 6789 --select=Name --select=Email --json
+php artisan onoffice:get address 6789 --select=Name --select=Vorname --select=Email --json
 ```
 
 ### List Available Fields
@@ -94,28 +97,134 @@ php artisan onoffice:fields estate --full --json
 - `--field=name` - Get single field with full details including permitted values
 - `--full` - Show all field details (length, default, permittedValues)
 
-### Supported Entities
+## Supported Entities
 
-- `estate` - Real estate listings
-- `address` - Contacts and addresses
-- `activity` - Activity logs
-- `file`, `field`, `filter`, `link`, `lastseen`, `relation`, `searchcriteria`, `setting`, `log`, `macro`, `marketplace`
+### estate - Real Estate Listings
 
-### Where Clause Operators
+Properties/real estate records. Common fields include:
 
-- `=` - Equals
-- `!=` - Not equals
-- `<`, `>`, `<=`, `>=` - Comparison
-- `like`, `not like` - Pattern matching
+| Field | Description |
+|-------|-------------|
+| `Id` | Estate ID |
+| `status` | Status (1 = active) |
+| `objektnr_extern` | External property number |
+| `objekttitel` | Property title |
+| `objekttyp` | Property type (singleselect) |
+| `objektart` | Property category |
+| `kaufpreis` | Purchase price |
+| `warmmiete` | Warm rent |
+| `kaltmiete` | Cold rent |
+| `wohnflaeche` | Living area (m²) |
+| `grundstuecksflaeche` | Plot area (m²) |
+| `anzahl_zimmer` | Number of rooms |
+| `Ort` | City |
+| `Plz` | Postal code |
+| `Strasse` | Street |
+| `land` | Country |
+| `breitengrad`, `laengengrad` | Coordinates |
+| `verkauft` | Sold (1) / Rented (1) |
+| `reserviert` | Reserved (1) |
+| `veroeffentlichen` | Published on homepage |
+| `geaendert_am` | Last modified date |
 
-### Output Format
+**Marketing status:** Combine `verkauft` and `reserviert` fields:
+- `verkauft=0, reserviert=0` → Open
+- `verkauft=0, reserviert=1` → Reserved
+- `verkauft=1` → Sold/Rented
+
+### address - Contacts and Addresses
+
+Contact records (clients, owners, prospects). Common fields include:
+
+| Field | Description |
+|-------|-------------|
+| `Id` | Address ID (Datensatznummer) |
+| `KdNr` | Customer number (external) |
+| `Anrede` | Salutation |
+| `Vorname` | First name |
+| `Name` | Last name |
+| `Firma` | Company |
+| `Strasse` | Street |
+| `Plz` | Postal code |
+| `Ort` | City |
+| `Land` | Country |
+| `Email` | Primary email |
+| `Telefon1` | Primary phone |
+| `phone` | All phone numbers |
+| `mobile` | Mobile numbers |
+| `fax` | Fax numbers |
+| `email` | All email addresses |
+| `defaultemail` | Default email only |
+| `imageUrl` | Profile photo URL |
+| `Aenderung` | Last modified date |
+
+**Note:** Record number (`Id`) and customer number (`KdNr`) are different fields. Use `Id` for API calls.
+
+### activity - Agents Log / Activities
+
+Activity records linked to estates and addresses. Common fields include:
+
+| Field | Description |
+|-------|-------------|
+| `Nr` | Activity ID |
+| `Objekt_nr` | Linked estate IDs |
+| `Adress_nr` | Linked address IDs |
+| `Aktionsart` | Kind of action (Email, Telefonat, etc.) |
+| `Aktionstyp` | Type of action (Eingang, Ausgang) |
+| `Datum` | Date/time |
+| `created` | Creation date |
+| `Benutzer` | User name |
+| `Benutzer_nr` | User ID |
+| `Bemerkung` | Comment/notes |
+| `Kosten` | Costs |
+| `HerkunftKontakt` | Contact origin |
+| `Beratungsebene` | Advisory level (A-G) |
+| `Absagegrund` | Reason for cancellation |
+
+**Advisory levels:** `A` (contract signed) through `G` (cancellation)
+
+### searchcriteria - Search Criteria
+
+Saved property search profiles for contacts. Fields include property preferences (price ranges, locations, property types) linked to addresses.
+
+### Other Entities
+
+- `file` - File attachments
+- `field` - Field configuration
+- `filter` - Saved filters
+- `relation` - Links between records (buyer, owner, tenant relationships)
+- `link` - URLs for detail views
+- `lastseen` - Recently viewed records
+- `setting` - System settings
+- `log` - Log entries
+- `macro` - Text macros
+- `marketplace` - Marketplace data
+
+## Where Clause Operators
+
+Supported operators for `--where` filters:
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `=` | Equals | `--where="status=1"` |
+| `!=` or `<>` | Not equals | `--where="status!=0"` |
+| `<` | Less than | `--where="kaufpreis<300000"` |
+| `>` | Greater than | `--where="wohnflaeche>80"` |
+| `<=` | Less than or equal | `--where="anzahl_zimmer<=3"` |
+| `>=` | Greater than or equal | `--where="kaufpreis>=100000"` |
+| `like` | Pattern match (% wildcard) | `--where="Ort like %Berlin%"` |
+| `not like` | Negative pattern match | `--where="Name not like %Test%"` |
+
+Multiple `--where` clauses are combined with AND logic.
+
+## Output Format
 
 With `--json` flag, output is structured for easy parsing:
 
 ```json
 {
   "data": [
-    {"id": "123", "elements": {"Ort": "Berlin", "Kaufpreis": "450000"}}
+    {"id": "123", "elements": {"Ort": "Berlin", "kaufpreis": "450000"}}
   ],
   "meta": {
     "total": 42,
