@@ -18,20 +18,26 @@ class GetCommand extends OnOfficeCommand
 
     protected $description = 'Get a single onOffice record by ID';
 
+    public function __construct(
+        protected RepositoryFactory $repositoryFactory
+    ) {
+        parent::__construct();
+    }
+
     protected function executeCommand(): int
     {
         $entity = $this->argument('entity');
         $id = $this->argument('id');
 
-        if (! RepositoryFactory::isValidEntity($entity)) {
-            throw new InvalidEntityException($entity, RepositoryFactory::getAvailableEntities());
+        if (! $this->repositoryFactory->isValidEntity($entity)) {
+            throw new InvalidEntityException($entity, $this->repositoryFactory->getAvailableEntities());
         }
 
         if (! is_numeric($id)) {
             throw new ValidationException("ID must be numeric, got '{$id}'");
         }
 
-        $query = RepositoryFactory::query($entity);
+        $query = $this->repositoryFactory->query($entity);
         $this->applyApiClaim($query);
 
         $select = $this->option('select');

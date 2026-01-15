@@ -69,26 +69,51 @@ composer format            # Laravel Pint
 ```
 src/
 ├── Commands/
-│   ├── SearchCommand.php      # onoffice:search
-│   ├── GetCommand.php         # onoffice:get
-│   └── FieldsCommand.php      # onoffice:fields
+│   ├── OnOfficeCommand.php   # Abstract base command with error handling
+│   ├── SearchCommand.php     # onoffice:search
+│   ├── GetCommand.php        # onoffice:get
+│   └── FieldsCommand.php     # onoffice:fields
 ├── Concerns/
-│   └── OutputsJson.php        # Trait for JSON output formatting
+│   └── OutputsJson.php       # Trait for JSON output formatting
+├── Exceptions/
+│   ├── OnOfficeCliException.php    # Base exception with HTTP codes
+│   ├── InvalidEntityException.php  # Unknown entity (400)
+│   ├── RecordNotFoundException.php # Record not found (404)
+│   └── ValidationException.php     # Validation errors (400)
 ├── Support/
-│   ├── RepositoryFactory.php  # Maps entity names to adapter repositories
-│   └── WhereClauseParser.php  # Parses --where clauses
-├── Facades/
-│   └── OnofficeCli.php        # Facade (unused, from boilerplate)
-├── OnofficeCliServiceProvider.php
-└── OnofficeCli.php            # Core class (unused, from boilerplate)
+│   ├── RepositoryFactory.php # Injectable factory for entity repositories
+│   └── WhereClauseParser.php # Parses --where clauses
+└── OnofficeCliServiceProvider.php
+config/
+└── onoffice-cli.php          # Publishable config (entities, field_modules)
 ```
 
 **Key patterns:**
-- `RepositoryFactory` maps entity names (e.g., "estate") to adapter facades (EstateRepository)
+- `RepositoryFactory` is injectable via DI, configured from `config/onoffice-cli.php`
 - `WhereClauseParser` parses `--where="field=value"` into [field, operator, value]
 - `OutputsJson` trait provides consistent JSON output formatting
+- Commands use constructor injection for dependencies
 - Errors: `{"error": true, "message": "...", "code": N}`
 - Success: `{"data": [...], "meta": {"total": N, "limit": N, "offset": N}}`
+
+## Configuration
+
+Publish config with: `php artisan vendor:publish --tag="onoffice-cli-config"`
+
+```php
+// config/onoffice-cli.php
+return [
+    'entities' => [
+        'estate' => EstateRepository::class,
+        // ... configurable entity mappings
+    ],
+    'field_modules' => [
+        'estate' => 'estate',
+        'activity' => 'agentslog',
+        // ... entity to module mappings for fields command
+    ],
+];
+```
 
 ## onOffice Adapter Usage
 
@@ -120,3 +145,4 @@ FieldRepository::query()
 - PHP 8.4+
 - Laravel 11/12
 - `innobrain/laravel-onoffice-adapter` ^1.11
+- `spatie/laravel-package-tools` ^1.16

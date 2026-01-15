@@ -35,8 +35,7 @@
     },
     "autoload": {
         "psr-4": {
-            "InnoBrain\\OnofficeCli\\": "src/",
-            "InnoBrain\\OnofficeCli\\Database\\Factories\\": "database/factories/"
+            "InnoBrain\\OnofficeCli\\": "src/"
         }
     },
     "autoload-dev": {

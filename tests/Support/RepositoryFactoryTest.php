@@ -4,7 +4,8 @@ use InnoBrain\OnofficeCli\Support\RepositoryFactory;
 
 describe('RepositoryFactory', function () {
     it('returns available entities', function () {
-        $entities = RepositoryFactory::getAvailableEntities();
+        $factory = app(RepositoryFactory::class);
+        $entities = $factory->getAvailableEntities();
 
         expect($entities)->toContain('estate');
         expect($entities)->toContain('address');
@@ -14,63 +15,79 @@ describe('RepositoryFactory', function () {
     });
 
     it('validates known entities', function () {
-        expect(RepositoryFactory::isValidEntity('estate'))->toBeTrue();
-        expect(RepositoryFactory::isValidEntity('address'))->toBeTrue();
-        expect(RepositoryFactory::isValidEntity('activity'))->toBeTrue();
-        expect(RepositoryFactory::isValidEntity('link'))->toBeTrue();
-        expect(RepositoryFactory::isValidEntity('lastseen'))->toBeTrue();
+        $factory = app(RepositoryFactory::class);
+
+        expect($factory->isValidEntity('estate'))->toBeTrue();
+        expect($factory->isValidEntity('address'))->toBeTrue();
+        expect($factory->isValidEntity('activity'))->toBeTrue();
+        expect($factory->isValidEntity('link'))->toBeTrue();
+        expect($factory->isValidEntity('lastseen'))->toBeTrue();
     });
 
     it('rejects unknown entities', function () {
-        expect(RepositoryFactory::isValidEntity('unknown'))->toBeFalse();
-        expect(RepositoryFactory::isValidEntity('foo'))->toBeFalse();
+        $factory = app(RepositoryFactory::class);
+
+        expect($factory->isValidEntity('unknown'))->toBeFalse();
+        expect($factory->isValidEntity('foo'))->toBeFalse();
     });
 
     it('is case insensitive', function () {
-        expect(RepositoryFactory::isValidEntity('ESTATE'))->toBeTrue();
-        expect(RepositoryFactory::isValidEntity('Estate'))->toBeTrue();
-        expect(RepositoryFactory::isValidEntity('eStAtE'))->toBeTrue();
+        $factory = app(RepositoryFactory::class);
+
+        expect($factory->isValidEntity('ESTATE'))->toBeTrue();
+        expect($factory->isValidEntity('Estate'))->toBeTrue();
+        expect($factory->isValidEntity('eStAtE'))->toBeTrue();
     });
 
     it('trims whitespace', function () {
-        expect(RepositoryFactory::isValidEntity('  estate  '))->toBeTrue();
+        $factory = app(RepositoryFactory::class);
+
+        expect($factory->isValidEntity('  estate  '))->toBeTrue();
     });
 
     it('throws exception for unknown entity when getting repository class', function () {
-        RepositoryFactory::getRepositoryClass('unknown');
+        $factory = app(RepositoryFactory::class);
+        $factory->getRepositoryClass('unknown');
     })->throws(InvalidArgumentException::class, "Unknown entity 'unknown'");
 
     it('returns correct repository class for estate', function () {
-        $class = RepositoryFactory::getRepositoryClass('estate');
+        $factory = app(RepositoryFactory::class);
+        $class = $factory->getRepositoryClass('estate');
 
         expect($class)->toBe(\Innobrain\OnOfficeAdapter\Facades\EstateRepository::class);
     });
 
     it('returns correct repository class for address', function () {
-        $class = RepositoryFactory::getRepositoryClass('address');
+        $factory = app(RepositoryFactory::class);
+        $class = $factory->getRepositoryClass('address');
 
         expect($class)->toBe(\Innobrain\OnOfficeAdapter\Facades\AddressRepository::class);
     });
 
     it('returns correct repository class for relation', function () {
-        $class = RepositoryFactory::getRepositoryClass('relation');
+        $factory = app(RepositoryFactory::class);
+        $class = $factory->getRepositoryClass('relation');
 
         expect($class)->toBe(\Innobrain\OnOfficeAdapter\Facades\RelationRepository::class);
     });
 
     it('returns correct repository class for link', function () {
-        $class = RepositoryFactory::getRepositoryClass('link');
+        $factory = app(RepositoryFactory::class);
+        $class = $factory->getRepositoryClass('link');
 
         expect($class)->toBe(\Innobrain\OnOfficeAdapter\Facades\LinkRepository::class);
     });
 
     it('returns correct repository class for lastseen', function () {
-        $class = RepositoryFactory::getRepositoryClass('lastseen');
+        $factory = app(RepositoryFactory::class);
+        $class = $factory->getRepositoryClass('lastseen');
 
         expect($class)->toBe(\Innobrain\OnOfficeAdapter\Facades\LastSeenRepository::class);
     });
 
     it('validates relation entity', function () {
-        expect(RepositoryFactory::isValidEntity('relation'))->toBeTrue();
+        $factory = app(RepositoryFactory::class);
+
+        expect($factory->isValidEntity('relation'))->toBeTrue();
     });
 });

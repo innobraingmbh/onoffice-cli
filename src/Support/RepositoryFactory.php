@@ -2,51 +2,24 @@
 
 namespace InnoBrain\OnofficeCli\Support;
 
-use Innobrain\OnOfficeAdapter\Facades\ActivityRepository;
-use Innobrain\OnOfficeAdapter\Facades\AddressRepository;
-use Innobrain\OnOfficeAdapter\Facades\EstateRepository;
-use Innobrain\OnOfficeAdapter\Facades\FieldRepository;
-use Innobrain\OnOfficeAdapter\Facades\FileRepository;
-use Innobrain\OnOfficeAdapter\Facades\FilterRepository;
-use Innobrain\OnOfficeAdapter\Facades\LastSeenRepository;
-use Innobrain\OnOfficeAdapter\Facades\LinkRepository;
-use Innobrain\OnOfficeAdapter\Facades\LogRepository;
-use Innobrain\OnOfficeAdapter\Facades\MacroRepository;
-use Innobrain\OnOfficeAdapter\Facades\MarketplaceRepository;
-use Innobrain\OnOfficeAdapter\Facades\RelationRepository;
-use Innobrain\OnOfficeAdapter\Facades\SearchCriteriaRepository;
-use Innobrain\OnOfficeAdapter\Facades\SettingRepository;
 use Innobrain\OnOfficeAdapter\Query\Builder;
 use InvalidArgumentException;
 
 class RepositoryFactory
 {
     /**
-     * @var array<string, class-string>
+     * @param  array<string, class-string>  $repositories
      */
-    protected static array $repositories = [
-        'estate' => EstateRepository::class,
-        'address' => AddressRepository::class,
-        'activity' => ActivityRepository::class,
-        'field' => FieldRepository::class,
-        'file' => FileRepository::class,
-        'filter' => FilterRepository::class,
-        'lastseen' => LastSeenRepository::class,
-        'link' => LinkRepository::class,
-        'log' => LogRepository::class,
-        'macro' => MacroRepository::class,
-        'marketplace' => MarketplaceRepository::class,
-        'relation' => RelationRepository::class,
-        'searchcriteria' => SearchCriteriaRepository::class,
-        'setting' => SettingRepository::class,
-    ];
+    public function __construct(
+        protected array $repositories = []
+    ) {}
 
     /**
      * Get a query builder for the given entity.
      */
-    public static function query(string $entity): Builder
+    public function query(string $entity): Builder
     {
-        $repositoryClass = self::getRepositoryClass($entity);
+        $repositoryClass = $this->getRepositoryClass($entity);
 
         return $repositoryClass::query();
     }
@@ -56,17 +29,17 @@ class RepositoryFactory
      *
      * @return class-string
      */
-    public static function getRepositoryClass(string $entity): string
+    public function getRepositoryClass(string $entity): string
     {
         $normalized = strtolower(trim($entity));
 
-        if (! isset(self::$repositories[$normalized])) {
+        if (! isset($this->repositories[$normalized])) {
             throw new InvalidArgumentException(
-                "Unknown entity '{$entity}'. Available entities: ".implode(', ', self::getAvailableEntities())
+                "Unknown entity '{$entity}'. Available entities: ".implode(', ', $this->getAvailableEntities())
             );
         }
 
-        return self::$repositories[$normalized];
+        return $this->repositories[$normalized];
     }
 
     /**
@@ -74,16 +47,16 @@ class RepositoryFactory
      *
      * @return array<string>
      */
-    public static function getAvailableEntities(): array
+    public function getAvailableEntities(): array
     {
-        return array_keys(self::$repositories);
+        return array_keys($this->repositories);
     }
 
     /**
      * Check if an entity is supported.
      */
-    public static function isValidEntity(string $entity): bool
+    public function isValidEntity(string $entity): bool
     {
-        return isset(self::$repositories[strtolower(trim($entity))]);
+        return isset($this->repositories[strtolower(trim($entity))]);
     }
 }

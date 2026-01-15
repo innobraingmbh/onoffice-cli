@@ -11,11 +11,38 @@ Built on top of [laravel-onoffice-adapter](https://github.com/innobraingmbh/lara
 
 ## Installation
 
+You can install the package via composer:
+
 ```bash
 composer require innobraingmbh/onoffice-cli
 ```
 
 This package requires [laravel-onoffice-adapter](https://github.com/innobraingmbh/laravel-onoffice-adapter) to be configured with your onOffice API credentials.
+
+You can publish the config file with:
+
+```bash
+php artisan vendor:publish --tag="onoffice-cli-config"
+```
+
+This is the contents of the published config file:
+
+```php
+return [
+    'entities' => [
+        'estate' => Innobrain\OnOfficeAdapter\Facades\EstateRepository::class,
+        'address' => Innobrain\OnOfficeAdapter\Facades\AddressRepository::class,
+        // ... more entities
+    ],
+
+    'field_modules' => [
+        'estate' => 'estate',
+        'address' => 'address',
+        'activity' => 'agentslog',
+        'searchcriteria' => 'searchcriteria',
+    ],
+];
+```
 
 ## Usage
 

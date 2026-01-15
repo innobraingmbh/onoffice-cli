@@ -9,13 +9,6 @@ use InnoBrain\OnofficeCli\Exceptions\RecordNotFoundException;
 
 class FieldsCommand extends OnOfficeCommand
 {
-    protected const MODULE_MAP = [
-        'estate' => 'estate',
-        'address' => 'address',
-        'activity' => 'agentslog',
-        'searchcriteria' => 'searchcriteria',
-    ];
-
     protected $signature = 'onoffice:fields
         {entity : The entity to get fields for (estate, address, activity, searchcriteria)}
         {--filter= : Filter fields by name (case-insensitive, supports wildcards: *preis*)}
@@ -29,15 +22,16 @@ class FieldsCommand extends OnOfficeCommand
     protected function executeCommand(): int
     {
         $entity = strtolower($this->argument('entity'));
+        $fieldModules = config('onoffice-cli.field_modules', []);
 
-        if (! isset(self::MODULE_MAP[$entity])) {
+        if (! isset($fieldModules[$entity])) {
             throw new OnOfficeCliException(
-                "Fields are not available for '{$entity}'. Supported: ".implode(', ', array_keys(self::MODULE_MAP)),
+                "Fields are not available for '{$entity}'. Supported: ".implode(', ', array_keys($fieldModules)),
                 400
             );
         }
 
-        $module = self::MODULE_MAP[$entity];
+        $module = $fieldModules[$entity];
 
         $query = FieldRepository::query();
         $this->applyApiClaim($query);

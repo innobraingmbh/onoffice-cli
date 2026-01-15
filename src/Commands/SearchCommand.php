@@ -22,15 +22,21 @@ class SearchCommand extends OnOfficeCommand
 
     protected $description = 'Search onOffice records with filters and pagination';
 
+    public function __construct(
+        protected RepositoryFactory $repositoryFactory
+    ) {
+        parent::__construct();
+    }
+
     protected function executeCommand(): int
     {
         $entity = $this->argument('entity');
 
-        if (! RepositoryFactory::isValidEntity($entity)) {
-            throw new InvalidEntityException($entity, RepositoryFactory::getAvailableEntities());
+        if (! $this->repositoryFactory->isValidEntity($entity)) {
+            throw new InvalidEntityException($entity, $this->repositoryFactory->getAvailableEntities());
         }
 
-        $query = RepositoryFactory::query($entity);
+        $query = $this->repositoryFactory->query($entity);
         $this->applyApiClaim($query);
 
         $select = $this->option('select');
