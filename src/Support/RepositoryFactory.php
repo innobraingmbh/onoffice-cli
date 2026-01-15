@@ -8,6 +8,8 @@ use Innobrain\OnOfficeAdapter\Facades\EstateRepository;
 use Innobrain\OnOfficeAdapter\Facades\FieldRepository;
 use Innobrain\OnOfficeAdapter\Facades\FileRepository;
 use Innobrain\OnOfficeAdapter\Facades\FilterRepository;
+use Innobrain\OnOfficeAdapter\Facades\LastSeenRepository;
+use Innobrain\OnOfficeAdapter\Facades\LinkRepository;
 use Innobrain\OnOfficeAdapter\Facades\LogRepository;
 use Innobrain\OnOfficeAdapter\Facades\MacroRepository;
 use Innobrain\OnOfficeAdapter\Facades\MarketplaceRepository;
@@ -29,6 +31,8 @@ class RepositoryFactory
         'field' => FieldRepository::class,
         'file' => FileRepository::class,
         'filter' => FilterRepository::class,
+        'lastseen' => LastSeenRepository::class,
+        'link' => LinkRepository::class,
         'log' => LogRepository::class,
         'macro' => MacroRepository::class,
         'marketplace' => MarketplaceRepository::class,

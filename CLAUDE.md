@@ -23,7 +23,7 @@ php artisan onoffice:get <entity> <id> [--select=field] [--json]
 php artisan onoffice:fields <entity> [--filter=pattern] [--field=name] [--full] [--json]
 ```
 
-**Supported entities for search/get:** `estate`, `address`, `activity`, `file`, `field`, `filter`, `relation`, `searchcriteria`, `setting`, `log`, `macro`, `marketplace`
+**Supported entities for search/get:** `estate`, `address`, `activity`, `file`, `field`, `filter`, `link`, `lastseen`, `relation`, `searchcriteria`, `setting`, `log`, `macro`, `marketplace`
 
 **Supported entities for fields:** `estate`, `address`, `activity`, `searchcriteria`
 

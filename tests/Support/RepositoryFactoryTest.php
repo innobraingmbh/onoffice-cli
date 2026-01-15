@@ -9,12 +9,16 @@ describe('RepositoryFactory', function () {
         expect($entities)->toContain('estate');
         expect($entities)->toContain('address');
         expect($entities)->toContain('activity');
+        expect($entities)->toContain('link');
+        expect($entities)->toContain('lastseen');
     });
 
     it('validates known entities', function () {
         expect(RepositoryFactory::isValidEntity('estate'))->toBeTrue();
         expect(RepositoryFactory::isValidEntity('address'))->toBeTrue();
         expect(RepositoryFactory::isValidEntity('activity'))->toBeTrue();
+        expect(RepositoryFactory::isValidEntity('link'))->toBeTrue();
+        expect(RepositoryFactory::isValidEntity('lastseen'))->toBeTrue();
     });
 
     it('rejects unknown entities', function () {
@@ -46,5 +50,27 @@ describe('RepositoryFactory', function () {
         $class = RepositoryFactory::getRepositoryClass('address');
 
         expect($class)->toBe(\Innobrain\OnOfficeAdapter\Facades\AddressRepository::class);
+    });
+
+    it('returns correct repository class for relation', function () {
+        $class = RepositoryFactory::getRepositoryClass('relation');
+
+        expect($class)->toBe(\Innobrain\OnOfficeAdapter\Facades\RelationRepository::class);
+    });
+
+    it('returns correct repository class for link', function () {
+        $class = RepositoryFactory::getRepositoryClass('link');
+
+        expect($class)->toBe(\Innobrain\OnOfficeAdapter\Facades\LinkRepository::class);
+    });
+
+    it('returns correct repository class for lastseen', function () {
+        $class = RepositoryFactory::getRepositoryClass('lastseen');
+
+        expect($class)->toBe(\Innobrain\OnOfficeAdapter\Facades\LastSeenRepository::class);
+    });
+
+    it('validates relation entity', function () {
+        expect(RepositoryFactory::isValidEntity('relation'))->toBeTrue();
     });
 });

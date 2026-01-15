@@ -72,7 +72,7 @@ php artisan onoffice:fields estate --full --json
 - `estate` - Real estate listings
 - `address` - Contacts and addresses
 - `activity` - Activity logs
-- `file`, `field`, `filter`, `relation`, `searchcriteria`, `setting`, `log`, `macro`, `marketplace`
+- `file`, `field`, `filter`, `link`, `lastseen`, `relation`, `searchcriteria`, `setting`, `log`, `macro`, `marketplace`
 
 ### Where Clause Operators
 
