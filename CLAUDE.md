@@ -10,17 +10,17 @@ Built on `innobrain/laravel-onoffice-adapter` ([docs](https://oo-adapter.innobra
 
 ## CLI Commands
 
-All commands support `--json` flag for machine-readable output.
+All commands support `--json` flag for machine-readable output and `--apiClaim` for per-request API claims.
 
 ```bash
 # Search entities
-php artisan onoffice:search <entity> [--where="field=value"] [--where="field<value"] [--select=field] [--limit=N] [--offset=N] [--orderBy=field] [--orderByDesc=field] [--json]
+php artisan onoffice:search <entity> [--where="field=value"] [--where="field<value"] [--select=field] [--limit=N] [--offset=N] [--orderBy=field] [--orderByDesc=field] [--apiClaim=claim] [--json]
 
 # Get single record by ID
-php artisan onoffice:get <entity> <id> [--select=field] [--json]
+php artisan onoffice:get <entity> <id> [--select=field] [--apiClaim=claim] [--json]
 
 # List available fields for an entity (compact by default)
-php artisan onoffice:fields <entity> [--filter=pattern] [--field=name] [--full] [--json]
+php artisan onoffice:fields <entity> [--filter=pattern] [--field=name] [--full] [--apiClaim=claim] [--json]
 ```
 
 **Supported entities for search/get:** `estate`, `address`, `activity`, `file`, `field`, `filter`, `link`, `lastseen`, `relation`, `searchcriteria`, `setting`, `log`, `macro`, `marketplace`

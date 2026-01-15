@@ -13,6 +13,7 @@ class GetCommand extends OnOfficeCommand
         {entity : The entity type (estate, address, activity, etc.)}
         {id : The record ID to fetch}
         {--select=* : Fields to select (e.g., --select=Id --select=Ort)}
+        {--apiClaim= : API claim for the request}
         {--json : Output results as JSON}';
 
     protected $description = 'Get a single onOffice record by ID';
@@ -31,6 +32,7 @@ class GetCommand extends OnOfficeCommand
         }
 
         $query = RepositoryFactory::query($entity);
+        $this->applyApiClaim($query);
 
         $select = $this->option('select');
         if (filled($select)) {

@@ -21,6 +21,7 @@ class FieldsCommand extends OnOfficeCommand
         {--filter= : Filter fields by name (case-insensitive, supports wildcards: *preis*)}
         {--field= : Get details for a specific field including permitted values}
         {--full : Show full field details including permitted values}
+        {--apiClaim= : API claim for the request}
         {--json : Output results as JSON}';
 
     protected $description = 'List available fields for an onOffice entity';
@@ -38,7 +39,10 @@ class FieldsCommand extends OnOfficeCommand
 
         $module = self::MODULE_MAP[$entity];
 
-        $response = FieldRepository::query()
+        $query = FieldRepository::query();
+        $this->applyApiClaim($query);
+
+        $response = $query
             ->withModules($module)
             ->get();
 

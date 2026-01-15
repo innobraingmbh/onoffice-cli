@@ -17,6 +17,7 @@ class SearchCommand extends OnOfficeCommand
         {--offset= : Number of results to skip}
         {--orderBy= : Field to order by (ascending)}
         {--orderByDesc= : Field to order by (descending)}
+        {--apiClaim= : API claim for the request}
         {--json : Output results as JSON}';
 
     protected $description = 'Search onOffice records with filters and pagination';
@@ -30,6 +31,7 @@ class SearchCommand extends OnOfficeCommand
         }
 
         $query = RepositoryFactory::query($entity);
+        $this->applyApiClaim($query);
 
         $select = $this->option('select');
         if (filled($select)) {
