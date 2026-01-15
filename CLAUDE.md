@@ -8,6 +8,35 @@ A Laravel package providing CLI commands for AI agents to interact with onOffice
 
 Built on `innobrain/laravel-onoffice-adapter` ([docs](https://oo-adapter.innobra.in/)).
 
+## onOffice API Documentation
+
+**Local API docs are available in `docs/` (gitignored).** Always consult these when implementing features:
+
+```bash
+# Search the API docs for field names, parameters, or concepts
+rg "search term" docs/apidoc-text
+
+# Example: find info about estate filters
+rg "filter" docs/apidoc-text/actions/datensatz-lesen/objekte/
+
+# Example: find address fields
+rg "Vorname\|Name\|Email" docs/apidoc-text/actions/datensatz-lesen/adressen/
+```
+
+**Key doc locations:**
+- `docs/apidoc-text/actions/datensatz-lesen/` - Read operations (estates, addresses, activities)
+- `docs/apidoc-text/actions/informationen-abfragen/` - Get operations (fields, relations, filters)
+- `docs/apidoc-text/actions/datensatz-anlegen/` - Create operations
+- `docs/apidoc-text/actions/datensatz-bearbeiten/` - Modify operations
+
+**When to use the docs:**
+- Adding new entity support → check available fields and parameters
+- Implementing filters → verify operator support and field names
+- Working with relations → understand parent/child ID relationships
+- Debugging API responses → compare expected vs actual field formats
+
+To regenerate docs, see `docs/apidoc.md`.
+
 ## CLI Commands
 
 All commands support `--json` flag for machine-readable output and `--apiClaim` for per-request API claims.
